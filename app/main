@@ -1,0 +1,78 @@
+from fastapi import FastAPI, HTTPException 
+import sqlite3
+import time
+import random
+
+app = FastAPI()
+
+# Set's up a simple SQLite DB in memory for speed
+DB_FILE = "tickets.db"
+
+def init_db():
+    conn = sqlite3.connect(DB_FILE)
+    cursor = conn.cursor()
+    cursor.execute("DROP TABLE IF EXISTS events")
+    cursor.execute("CREATE TABLE events (id INTEGER PRIMARY KEY, name TEXT, tickets_left INTEGER)")
+    cursor.execute("INSERT INTO events (id, name, tickets_left) VALUES (1, 'Coldplay Concert', 10)")
+    conn.commit()
+    conn.close()
+
+# Initialize's DB on startup
+init_db()
+
+def get_db_connection():
+    conn = sqlite3.connect(DB_FILE, check_same_thread=False)
+    conn.execute("PRAGMA journal_mode=WAL") 
+    return conn
+
+@app.get("/reset")
+def reset_system():
+    init_db()
+    return {"message": "System reset to 10 tickets."}
+
+
+@app.post("/buy_unsafe")
+def buy_ticket_unsafe():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    
+    # Read thestock
+    cursor.execute("SELECT tickets_left FROM events WHERE id = 1")
+    current_stock = cursor.fetchone()[0]
+    
+    time.sleep(0.2) 
+    
+    if current_stock > 0:
+        # Write the new stock
+        new_stock = current_stock - 1
+        cursor.execute("UPDATE events SET tickets_left = ? WHERE id = 1", (new_stock,))
+        conn.commit()
+        conn.close()
+        return {"status": "success", "remaining": new_stock}
+    else:
+        conn.close()
+        raise HTTPException(status_code=400, detail="Sold out")
+
+@app.post("/buy_safe")
+def buy_ticket_safe():
+    conn = get_db_connection()
+    try:
+        cursor = conn.cursor()
+        
+        cursor.execute("BEGIN IMMEDIATE")
+        
+        cursor.execute("SELECT tickets_left FROM events WHERE id = 1")
+        current_stock = cursor.fetchone()[0]
+        
+        if current_stock > 0:
+            cursor.execute("UPDATE events SET tickets_left = ? WHERE id = 1", (current_stock - 1,))
+            conn.commit()
+            return {"status": "success", "remaining": current_stock - 1}
+        else:
+            conn.rollback()
+            raise HTTPException(status_code=400, detail="Sold out")
+            
+    except sqlite3.OperationalError:
+        raise HTTPException(status_code=503, detail="System busy, try again")
+    finally:
+        conn.close()
