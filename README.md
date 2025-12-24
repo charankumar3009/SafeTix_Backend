@@ -8,7 +8,7 @@
 
 I simulated a high-load environment with 50 concurrent users. The results below demonstrate the necessity of transaction locking in distributed systems.
 
-![Stress Test Results](./assets/your_terminal_image.png)
+![Stress Test Results](images_(proof_of_work)/tester.png)
 
 > **Observation:** In Unsafe Mode, the race condition led to inconsistent state (Traffic too low error or Overselling). In Safe Mode, the `BEGIN IMMEDIATE` transaction ensured 100% accuracy.
 
@@ -16,7 +16,7 @@ I simulated a high-load environment with 50 concurrent users. The results below 
 
 The API is fully documented and testable via the Swagger UI.
 
-![Swagger UI](./images_(proof_of_work)/Swagger_UI.png)
+![Swagger UI]()
 ## 📋 Executive Summary
 **SafeTix** is a high-performance backend REST API designed to simulate and resolve **Race Conditions** in high-traffic e-commerce environments. 
 
