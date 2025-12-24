@@ -1,0 +1,52 @@
+import requests
+import threading
+import time
+
+API_URL = "http://127.0.0.1:8000"
+
+def attempt_purchase(endpoint):
+    try:
+        response = requests.post(f"{API_URL}/{endpoint}")
+        return response.status_code
+    except:
+        return 500
+
+def run_test(test_name, endpoint):
+    print(f"\n--- TESTING: {test_name} ---")
+    
+    #Reset's the Database
+    requests.get(f"{API_URL}/reset")
+    print("Database reset to 10 tickets.")
+    
+    threads = []
+    for i in range(50):
+        t = threading.Thread(target=attempt_purchase, args=(endpoint,))
+        threads.append(t)
+        t.start()
+    
+    for t in threads:
+        t.join()
+        
+    import sqlite3
+    conn = sqlite3.connect("tickets.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT tickets_left FROM events WHERE id=1")
+    left = cursor.fetchone()[0]
+    conn.close()
+    
+    sold = 10 - left
+    print(f"Tickets Actually Sold: {sold}/10")
+    if sold > 10:
+        print(" FAILED: Oversold! (Race Condition detected)")
+    elif sold == 10:
+        print(" PASSED: Exactly 10 sold.")
+    else:
+        print(f"  Incomplete: Only sold {sold} (Traffic too low?)")
+
+if __name__ == "__main__":
+    print("Ensure main.py is running in a separate terminal!")
+    time.sleep(1)
+    
+    run_test("UNSAFE MODE (No Locking)", "buy_unsafe")
+    time.sleep(2)
+    run_test("SAFE MODE (Transaction Locking)", "buy_safe")
