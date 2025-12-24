@@ -60,9 +60,9 @@ The project follows a modular "Separation of Concerns" design pattern suitable f
 ```text
 safetix-backend/
 ├── app/
-│   └── main.py          # API Controller,Database Connection & Route Logic
+│   └── main.py                  # API Controller,Database Connection & Route Logic
 ├── tests/
-│   └── stress_test.py   # Multi-threaded Load Testing Suite
-├── assets/              # Documentation Images
-├── requirements.txt     # Dependency Management
-└── README.md            # Technical Documentation
+│   └── stress_test.py           # Multi-threaded Load Testing Suite
+├── images_(proof_of_work)/      # Documentation Images
+├── requirements.txt             # Dependency Management
+└── README.md                    # Technical Documentation
