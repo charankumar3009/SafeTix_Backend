@@ -16,7 +16,7 @@ I simulated a high-load environment with 50 concurrent users. The results below 
 
 The API is fully documented and testable via the Swagger UI.
 
-![Swagger UI]()
+![Swagger UI](images_(proof_of_work)/Swagger_UI.png)
 ## 📋 Executive Summary
 **SafeTix** is a high-performance backend REST API designed to simulate and resolve **Race Conditions** in high-traffic e-commerce environments. 
 
